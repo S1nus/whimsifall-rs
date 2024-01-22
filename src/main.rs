@@ -4,27 +4,40 @@ use celestia_rpc::{BlobClient, HeaderClient, Client};
 use celestia_types::{Blob, nmt::Namespace};
 use celestia_types::blob::SubmitOptions;
 
+use thiserror::Error;
+
 struct RollupState {
     sync_height: u64,
     block_height: u64,
     namespace: Namespace,
 }
 
+#[derive(Error, Debug)]
+pub enum WhimsifallError {
+    #[error("Deserialization error")]
+    DeserializationError,
+}
+
 struct Block {
     height: u64,
+    gas_used: u64,
 }
 
 impl Block {
     fn serialize(&self) -> Vec<u8> {
-        self.height.to_be_bytes().to_vec()
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&self.height.to_be_bytes());
+        bytes.extend_from_slice(&self.gas_used.to_be_bytes());
+        bytes
     }
 
-    fn deserialize(bytes: &[u8]) -> Self {
-        let mut height_bytes = [0u8; 8];
-        height_bytes.copy_from_slice(&bytes[..8]);
-        Self {
-            height: u64::from_be_bytes(height_bytes),
-        }
+    fn deserialize(bytes: &[u8]) -> Result<Self, WhimsifallError> {
+        let height = u64::from_be_bytes(bytes[0..8].try_into().unwrap());
+        let gas_used = u64::from_be_bytes(bytes[8..16].try_into().unwrap());
+        Ok(Block {
+            height,
+            gas_used,
+        })
     }
 }
 
@@ -54,6 +67,10 @@ async fn sync_da_height(rollup_state: &mut RollupState, client: &Client, da_heig
     let blobs = client.blob_get_all(da_height, &[rollup_state.namespace])
         .await
         .expect("Could not get blobs");
+    for blob in &blobs {
+        let block = Block::deserialize(&blob.data);
+    }
+    println!("got {} blobs", blobs.len());
 }
 
 /*async fn submit_blob() {
