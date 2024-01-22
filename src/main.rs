@@ -4,24 +4,59 @@ use celestia_rpc::{BlobClient, HeaderClient, Client};
 use celestia_types::{Blob, nmt::Namespace};
 use celestia_types::blob::SubmitOptions;
 
-struct RollupClient {
-    sync_height:     
+struct RollupState {
+    sync_height: u64,
+    block_height: u64,
+    namespace: Namespace,
+}
+
+struct Block {
+    height: u64,
+}
+
+impl Block {
+    fn serialize(&self) -> Vec<u8> {
+        self.height.to_be_bytes().to_vec()
+    }
+
+    fn deserialize(bytes: &[u8]) -> Self {
+        let mut height_bytes = [0u8; 8];
+        height_bytes.copy_from_slice(&bytes[..8]);
+        Self {
+            height: u64::from_be_bytes(height_bytes),
+        }
+    }
 }
 
 #[tokio::main]
 async fn main() {
     let token = std::env::var("CELESTIA_NODE_AUTH_TOKEN").expect("Token not provided");
-    let start_height = std::env::var("CELESTIA_NODE_AUTH_TOKEN").expect("Start height not provided");
+    let start_height = std::env::var("START_HEIGHT").expect("Start height not provided");
+    let start_height: u64 = start_height.parse().expect("Could not parse start height");
+    let namespace = Namespace::new(0, 
+        &std::env::var("ROLLUP_NAMESPACE").expect("Rollup namespace not provided").into_bytes()
+    ).expect("Invalid namespace");
     let client = Client::new("ws://localhost:26658", Some(&token))
         .await
         .expect("Failed creating rpc client");
     let network_head = client.header_network_head()
         .await
         .expect("could not get network head");
-
+    let mut rollup = RollupState {
+        sync_height: start_height,
+        block_height: 1,
+        namespace: namespace,
+    };
+    sync_da_height(&mut rollup, &client, start_height).await;
 }
 
-async fn submit_blob() {
+async fn sync_da_height(rollup_state: &mut RollupState, client: &Client, da_height: u64) {
+    let blobs = client.blob_get_all(da_height, &[rollup_state.namespace])
+        .await
+        .expect("Could not get blobs");
+}
+
+/*async fn submit_blob() {
     // create a client to the celestia node
     let token = std::env::var("CELESTIA_NODE_AUTH_TOKEN").expect("Token not provided");
     let client = Client::new("ws://localhost:26658", Some(&token))
@@ -37,4 +72,4 @@ async fn submit_blob() {
     client.blob_submit(&[blob], SubmitOptions::default())
         .await
         .expect("Failed submitting the blob");
-}
+}*/
