@@ -3,7 +3,7 @@
 ## Overview
 Whimsifall is a based rollup on Celestia, written in Rust.
 
-![whimsifall][flowchart.png "Flowchart"]
+![whimsifall](flowchart.png "Flowchart")
 # Set up development environment
 
 This page will go over setting up your development environment to run Celestia software. This environment can be used for development, building binaries, and running nodes.
