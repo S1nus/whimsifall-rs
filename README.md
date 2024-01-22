@@ -94,3 +94,127 @@ Using `curl` (on macOS / Linux)
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf <https://sh.rustup.rs> | sh
 ```
+
+# Install celestia-node
+
+This tutorial goes over building and installing celestia-node. This tutorial assumes you completed the steps in [setting up your development environment](https://www.notion.so/celestiaorg/environment.md).
+
+Install the celestia-node binary by running the following
+commands:
+
+1. Remove any existing copy of celestia-node, clone the repository,
+and change into the directory:
+    
+    ```bash
+    cd $HOME
+    rm -rf celestia-node
+    git clone https://github.com/celestiaorg/celestia-node.git
+    cd celestia-node/
+    
+    ```
+    
+2. Check out to the desired version, based on the network you will use:
+    
+    ```bash
+    git checkout tags/v0.12.4
+    ```
+    
+3. Build the `celestia` binary:
+    
+    a. Standard build
+    
+    ```bash
+    make build
+    ```
+    
+4. Install the binary:
+    
+    ```bash
+    make install
+    ```
+    
+    ```bash
+    make go-install
+    ```
+    
+5. Build the `cel-key` utility:
+    
+    ```bash
+    make cel-key
+    ```
+    
+6. Verify that the binary is working and check the version:
+    
+    ```bash
+    celestia version
+    ```
+    
+
+The output will show the semantic version of celestia-node,
+commit hash, build date, system version, and Golang version.
+
+# Set up a Celestia light node
+
+This tutorial will guide you through setting up a Celestia light node, which
+will allow you to perform data availability sampling (DAS) on Celestia's data
+availability (DA) network.
+
+## Initialize the light node
+
+Run the following command:
+
+```
+celestia light init
+celestia light init --p2p.network mocha
+```
+
+The output in your terminal will show the location of your node store and
+config. It will also show confirmation that the node store has been initialized.
+
+### Start the light node
+
+Start the light node with a connection to a validator node's gRPC endpoint (which
+is usually exposed on port 9090):
+
+```
+celestia light start --core.ip rpc-mocha.pops.one --p2p.network mocha
+```
+
+### Keys and wallets
+
+You can create your key for your node by running the following command with the
+`[cel-key` utility](https://www.notion.so/developers/celestia-node-key) in the
+`celestia-node` directory:
+
+```
+celestia light start --keyring.accname my_celes_key \\
+    --core.ip rpc-mocha.pops.one --p2p.network mocha
+```
+
+Once you start the light node, a wallet key will be generated for you.
+You will need to fund that address with testnet tokens to pay for
+`PayForBlob` transactions.
+
+You can [find the address using the RPC CLI](https://www.notion.so/developers/node-tutorial.md#get-your-account-address)
+or by running the following command in the
+`celestia-node` directory:
+
+```
+./cel-key list --node.type light --keyring-backend test \\
+    --p2p.network <network>
+```
+
+### Testnet tokens
+
+Mocha network to get testnet tokens from:
+
+- [Mocha testnet](https://www.notion.so/celestiaorg/mocha-testnet.md#mocha-testnet-faucet)
+
+You can request funds to your wallet address using the following command in Discord:
+
+```
+$request <CELESTIA-ADDRESS>
+```
+
+Where `<CELESTIA-ADDRESS>` is the `celestia1******` address generated
+when you created the wallet.
