@@ -1,5 +1,7 @@
 # whimsifall-rs
 
+![whimsifall](whimsifall.png "Flowchart")
+
 ## Overview
 Whimsifall is a based rollup on Celestia, written in Rust.
 
