@@ -1,12 +1,24 @@
 use tokio::main;
 
-use celestia_rpc::{BlobClient, Client};
+use celestia_rpc::{BlobClient, HeaderClient, Client};
 use celestia_types::{Blob, nmt::Namespace};
 use celestia_types::blob::SubmitOptions;
 
+struct RollupClient {
+    sync_height:     
+}
+
 #[tokio::main]
 async fn main() {
-    submit_blob().await;
+    let token = std::env::var("CELESTIA_NODE_AUTH_TOKEN").expect("Token not provided");
+    let start_height = std::env::var("CELESTIA_NODE_AUTH_TOKEN").expect("Start height not provided");
+    let client = Client::new("ws://localhost:26658", Some(&token))
+        .await
+        .expect("Failed creating rpc client");
+    let network_head = client.header_network_head()
+        .await
+        .expect("could not get network head");
+
 }
 
 async fn submit_blob() {
