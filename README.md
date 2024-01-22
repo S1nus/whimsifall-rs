@@ -175,3 +175,9 @@ $request <CELESTIA-ADDRESS>
 
 Where `<CELESTIA-ADDRESS>` is the `celestia1******` address generated
 when you created the wallet.
+
+## Run the Rollup Script
+
+```
+bash start.sh
+```
